@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebaseConfig";
@@ -82,7 +81,3 @@ const Signup = () => {
 };
 
 export default Signup;
-
-
-
-

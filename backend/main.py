@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 import shutil
 import os
 from process_video import process_video
-from database import search_plate, init_db
+from database import search_plate, init_db, create_video_table
 import sqlite3
 import time
 import uuid
@@ -34,6 +34,8 @@ os.makedirs(TASKS_DIR, exist_ok=True)
 
 # Initialize database
 init_db()
+# Add this line to log database initialization
+print("Database initialized successfully")
 
 # Storage for background tasks
 processing_tasks = {}
@@ -104,6 +106,9 @@ def process_video_background_task(filename: str, task_id: str):
     task_file = os.path.join(TASKS_DIR, f"{task_id}.json")
     
     try:
+        # Create table for this video first to avoid the "no such table" error
+        create_video_table(filename)
+        
         # Update task status to processing
         task_status = {
             "id": task_id,
@@ -138,12 +143,15 @@ def process_video_background_task(filename: str, task_id: str):
             
     except Exception as e:
         # Mark task as failed
+        error_message = str(e)
+        print(f"Processing error for {filename}: {error_message}")
+        
         task_status = {
             "id": task_id,
             "filename": filename,
             "status": "failed",
             "progress": 0,
-            "error": str(e),
+            "error": error_message,
             "end_time": time.time()
         }
         
